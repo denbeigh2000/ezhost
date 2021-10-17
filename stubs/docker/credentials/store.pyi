@@ -1,0 +1,16 @@
+from . import constants as constants, errors as errors
+from .utils import (
+    create_environment_dict as create_environment_dict,
+    find_executable as find_executable,
+)
+from typing import Any
+
+class Store:
+    program: Any
+    exe: Any
+    environment: Any
+    def __init__(self, program, environment: Any | None = ...) -> None: ...
+    def get(self, server): ...
+    def store(self, server, username, secret): ...
+    def erase(self, server) -> None: ...
+    def list(self): ...
