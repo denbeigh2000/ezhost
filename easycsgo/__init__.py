@@ -7,7 +7,7 @@ DEFAULT_IMAGE_REPO = "index.docker.io/cm2network/csgo"
 DEFAULT_IMAGE_TAG = "latest"
 
 DEFAULT_CONFIG_PATH = Path(__file__) / "../configs"
-CONTATINER_SERVER_PATH = "/home/steam/csgo-dedicated/csgo/cfg/server.cfg"
+CONTAINER_SERVER_PATH = "/home/steam/csgo-dedicated/csgo/cfg/server.cfg"
 
 DEFAULT_MAP_GROUP = "mg_active"
 DEFAULT_MAX_PLAYERS = 14

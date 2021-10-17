@@ -4,7 +4,7 @@ from easycsgo import ConfigNotFound, DEFAULT_CONFIG_PATH
 from easycsgo.deployment import Deployment
 
 from pathlib import Path
-from typing import Optional
+from typing import Dict, Optional
 
 import docker
 
@@ -21,8 +21,7 @@ class Manager:
 
     def deploy(
         self,
-        cfg_name: str,
-        cfg_path: Optional[Path] = None
+        deployment: Deployment,
     ):
         if cfg_path is None:
             # Attempt to use a config file if one exists with the name locally.

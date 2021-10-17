@@ -16,53 +16,52 @@ from easycsgo import (
     NotRunningException,
 )
 
+from dataclasses import dataclass
 from typing import Any, Dict, Optional
 
 from docker.api import DockerClient
 from docker.models.containers import Container
 
 
+@dataclass
+class ServerConfig:
+    rcon_password: str
+    game_password: Optional[str] = None
+    local_cfg: Optional[str] = None
+    port: int = DEFAULT_SERVER_PORT
+    tv_port: int = DEFAULT_SERVER_TV_PORT
+
+
+@dataclass
+class GameSettings:
+    max_players: int = DEFAULT_MAX_PLAYERS
+    map_group: str = DEFAULT_MAP_GROUP
+    start_map: str = DEFAULT_START_MAP
+    game_mode: GameMode = GameMode.COMPETITIVE
+    game_type: GameType = GameType.CLASSIC
+    tickrate: int = DEFAULT_TICKRATE
+
+
 class Deployment:
     def __init__(
         self,
         client: DockerClient,
-        name: str,
-        password: str,
-        rcon_password: str,
+        deployment_name: str,
+        server_config: ServerConfig,
+        game_settings: GameSettings,
         img_repo: str = DEFAULT_IMAGE_REPO,
         img_tag: str = DEFAULT_IMAGE_TAG,
-        local_cfg: Optional[str] = None,
-        server_port: int = DEFAULT_SERVER_PORT,
-        server_tv_port: int = DEFAULT_SERVER_TV_PORT,
-        max_players: int = DEFAULT_MAX_PLAYERS,
-        map_group: str = DEFAULT_MAP_GROUP,
-        start_map: str = DEFAULT_START_MAP,
-        game_mode: GameMode = GameMode.COMPETITIVE,
-        game_type: GameType = GameType.CLASSIC,
-        tickrate: int = DEFAULT_TICKRATE,
         gameserver_token: Optional[str] = None,
         workshop_key: Optional[str] = None,
     ):
-        self._name = name
+        self._name = deployment_name
         self._docker = client
 
         self._container_name = f"easycsgo_{self._name}"
         self._image_uri = f"{img_repo}:{img_tag}"
 
-        # Server configuration
-        self._local_cfg = local_cfg
-        self._port = server_port
-        self._tv_port = server_tv_port
-        self._password = password
-        self._rcon_password = rcon_password
-
-        # Game settings
-        self._start_map = start_map
-        self._map_group = map_group
-        self._max_players = max_players
-        self._game_mode = game_mode
-        self._game_type = game_type
-        self._tickrate = tickrate
+        self._server_config = server_config
+        self._game_settings = game_settings
 
         # Keys
         self._gameserver_token = gameserver_token
@@ -82,24 +81,27 @@ class Deployment:
 
     def _env(self) -> Dict[str, str]:
         env = {
-            "SRCDS_RCONPW": self._rcon_password,
-            "SRCDS_PW": self._password,
-            "SRCDS_PORT": str(self._port),
-            "SRCDS_TV_PORT": str(self._tv_port),
-            "SRCDS_TICKRATE": str(self._tickrate),
-            "SRCDS_MAXPLAYERS": str(self._max_players),
-            "SRCDS_STARTMAP": self._start_map,
-            "SRCDS_MAPGROUP": self._map_group,
-            "SRCDS_MAXPLAYERS": str(self._max_players)
-            "SRCDS_GAMETYPE": str(self._game_type.value),
-            "SRCDS_GAMEMODE": str(self._game_mode.value),
+            "SRCDS_RCONPW": self._server_config.rcon_password,
+            "SRCDS_PORT": str(self._server_config.port),
+            "SRCDS_TV_PORT": str(self._server_config.tv_port),
+            "SRCDS_TICKRATE": str(self._game_settings.tickrate),
+            "SRCDS_MAXPLAYERS": str(self._game_settings.max_players),
+            "SRCDS_STARTMAP": self._game_settings.start_map,
+            "SRCDS_MAPGROUP": self._game_settings.map_group,
+            "SRCDS_GAMETYPE": str(self._game_settings.game_type.value),
+            "SRCDS_GAMEMODE": str(self._game_settings.game_mode.value),
             "SRCDS_HOSTNAME": self._name,
         }
 
-        use_workshop = self._workshop_key is not None
-        env["SRCDS_HOST_WORKSHOP_COLLECTION"] = "1" if use_workshop else "0"
-        if use_workshop:
+        game_pw = self._server_config.game_password
+        if game_pw is not None:
+            env["SRCDS_PW"] = game_pw
+
+        if self._workshop_key is not None:
+            env["SRCDS_HOST_WORKSHOP_COLLECTION"] = "1"
             env["SRCDS_WORKSHOP_AUTHKEY"] = self._workshop_key
+        else:
+            env["SRCDS_HOST_WORKSHOP_COLLECTION"] = "0"
 
         if self._gameserver_token is not None:
             env["SRCDS_TOKEN"] = self._gameserver_token
@@ -107,12 +109,12 @@ class Deployment:
         return env
 
     def _volumes(self) -> Dict[str, Dict[str, str]]:
-        if self.local_cfg is None:
+        if self._server_config.local_cfg is None:
             return {}
 
         return {
             CONTAINER_SERVER_PATH: {
-                'bind': self._local_cfg,
+                'bind': self._server_config.local_cfg,
                 'mode': 'ro',
             }
         }
