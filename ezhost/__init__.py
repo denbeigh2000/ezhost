@@ -3,6 +3,8 @@
 from enum import Enum
 from pathlib import Path
 
+from click import ClickException
+
 DEFAULT_IMAGE_REPO = "index.docker.io/cm2network/csgo"
 DEFAULT_IMAGE_TAG = "latest"
 
@@ -24,22 +26,20 @@ class PullPolicy(Enum):
     NEVER = 2
 
 
-class EZHostException(Exception):
+class EZHostException(ClickException):
     pass
 
 
 class AlreadyRunningException(EZHostException):
     def __init__(self, container_name: str):
-        super().__init__(
-            self, f"container for config {container_name} is already running"
-        )
+        super(f"container for config {container_name} is already running")
 
 
 class NotRunningException(EZHostException):
     def __init__(self, container_name: str):
-        super().__init__(self, f"container for config {container_name} is not running")
+        super(f"container for config {container_name} is not running")
 
 
 class ConfigNotFound(EZHostException):
     def __init__(self, config_name: str):
-        super().__init__(self, f"config {config_name} could not be found")
+        super(f"config {config_name} could not be found")
