@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
-from easycsgo import DEFAULT_CONFIG_PATH
+from easycsgo import ConfigNotFound, DEFAULT_CONFIG_PATH
+from easycsgo.deployment import Deployment
 
 from pathlib import Path
 from typing import Optional
@@ -16,13 +17,18 @@ class Manager:
     ):
         self._docker = client or docker.from_env()
         self._config_dir = config_dir
+        self._used_ports: Dict[int, str] = {}
 
-    def deploy(self, config: str, cfg: Optional[Path] = None):
-        if cfg is None:
-            cfg = self._resolve_config_path(config)
+    def deploy(
+        self,
+        cfg_name: str,
+        cfg_path: Optional[Path] = None
+    ):
+        if cfg_path is None:
+            # Attempt to use a config file if one exists with the name locally.
+            cfg_path = self._resolve_config_path(cfg_name)
 
-        if cfg is None:
-            raise ConnectionAbortedError
+        # deployment = Deployment(self._docker, cfg_name)
 
     def _resolve_config_path(self, name: str) -> Optional[Path]:
         path = Path(name)
