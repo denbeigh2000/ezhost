@@ -16,7 +16,12 @@ import docker
 
 class ImageNotFoundException(EZHostException):
     def __init__(self, repo: str, tag: str):
-        super().__init__(self, f"image not found: {repo}@{tag}")
+        super().__init__(f"image not found: {repo}@{tag}")
+
+
+class ContainerNotBuiltException(EZHostException):
+    def __init__(self, name: str):
+        super().__init__(f"container not built: {name}")
 
 
 class Manager:
@@ -59,6 +64,7 @@ class Manager:
         args: Dict[str, Any] = {
             "image": d.image,
             "name": d.container_name,
+            "command": None,
         }
 
         env = d.env()
@@ -78,19 +84,30 @@ class Manager:
         return args
 
     def stop(self, d: Deployment):
-        if not self._is_running(d):
-            raise NotRunningException(d.name)
-
-        container = self._find_container(d)
-        assert container is not None
+        container = self._get_container(d, must_be_running=True)
         container.stop(timeout=d.shutdown_timeout.total_seconds())
 
+    def rm(self, d: Deployment, force: bool):
+        container = self._get_container(d)
+        container.remove(force=force)
+
     def list_containers(self) -> List[Tuple[str, bool]]:
-        query_filter = {"name": f"^{CONTAINER_PREFIX}*$"}
+        query_filter = {"name": f"^{CONTAINER_PREFIX}*"}
         containers = self._client.containers.list(all=True, filters=query_filter)
         return [
             (c.name[len(CONTAINER_PREFIX):], c.status == "running") for c in containers
         ]
+
+    def _get_container(self, d: Deployment, must_be_running: bool = False) -> Container:
+        maybe_container = self._find_container(d)
+        if must_be_running:
+            if maybe_container is None or maybe_container.status != "running":
+                raise NotRunningException(d.name)
+        else:
+            if maybe_container is None:
+                raise ContainerNotBuiltException(d.name)
+
+        return maybe_container
 
     def _find_container(self, d: Deployment) -> Optional[Container]:
         query_filter = {"name": f"^{d.container_name}$"}

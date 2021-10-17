@@ -28,27 +28,17 @@ def get_deployables() -> Dict[str, Deployment]:
 
 
 def deployment_arg(wrapped: Any) -> Any:
-    @click.argument(
-        "deployment", type=str, required=True, callback=deployment_arg_callback
-    )
+    @click.argument("deployment", type=str, required=True, callback=deployment_arg_callback)
     def wrapper(*args, **kwargs):
         wrapped(*args, **kwargs)
 
     return update_wrapper(wrapper, wrapped)
 
 
-def deployment_arg_callback(ctx: click.Context, _param: str, value: str) -> Deployment:
+def deployment_arg_callback(ctx: click.Context, param: str, value: str) -> Deployment:
     deployables = get_deployables()
     if value in deployables:
+        ctx.params['deployment'] = deployables[value]
         return deployables[value]
 
     raise ConfigNotFound(value)
-
-
-def find_deployables(f: Any) -> Any:
-    @click.pass_context
-    def run_with_deployables(ctx: click.Context, *args, **kwargs):
-        deployable = get_deployables()
-        return ctx.invoke(f, deployable, *args, **kwargs)
-
-    return update_wrapper(run_with_deployables, f)
