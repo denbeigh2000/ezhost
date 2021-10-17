@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
-from easycsgo import ConfigNotFound, DEFAULT_CONFIG_PATH
-from easycsgo.deployment import Deployment
+from ezhost import ConfigNotFound, DEFAULT_CONFIG_PATH
+from ezhost.deployment import Deployment
 
 from pathlib import Path
 from typing import Dict, Optional
@@ -23,10 +23,7 @@ class Manager:
         self,
         deployment: Deployment,
     ):
-        if cfg_path is None:
-            # Attempt to use a config file if one exists with the name locally.
-            cfg_path = self._resolve_config_path(cfg_name)
-
+        pass
         # deployment = Deployment(self._docker, cfg_name)
 
     def _resolve_config_path(self, name: str) -> Optional[Path]:

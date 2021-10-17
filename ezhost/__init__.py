@@ -17,6 +17,7 @@ DEFAULT_TICKRATE = 128
 DEFAULT_SERVER_PORT = 27015
 DEFAULT_SERVER_TV_PORT = 27020
 
+
 class PullPolicy(Enum):
     IF_NOT_PRESENT = 0
     ALWAYS = 1
@@ -42,22 +43,22 @@ class GameMode(Enum):
     WEAPONS_EXPERT = 3
 
 
-class EasyCSGOException(Exception):
+class EZHostException(Exception):
     pass
 
 
-class AlreadyRunningException(EasyCSGOException):
+class AlreadyRunningException(EZHostException):
     def __init__(self, container_name: str):
         super().__init__(
             self, f"container for config {container_name} is already running"
         )
 
 
-class NotRunningException(EasyCSGOException):
+class NotRunningException(EZHostException):
     def __init__(self, container_name: str):
         super().__init__(self, f"container for config {container_name} is not running")
 
 
-class ConfigNotFound(EasyCSGOException):
+class ConfigNotFound(EZHostException):
     def __init__(self, config_name: str):
         super().__init__(self, f"config {config_name} could not be found")

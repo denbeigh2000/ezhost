@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-from easycsgo import (
+from ezhost import (
     AlreadyRunningException,
     CONTAINER_SERVER_PATH,
     DEFAULT_IMAGE_REPO,
@@ -57,7 +57,7 @@ class Deployment:
         self._name = deployment_name
         self._docker = client
 
-        self._container_name = f"easycsgo_{self._name}"
+        self._container_name = f"ezhost_{self._name}"
         self._image_uri = f"{img_repo}:{img_tag}"
 
         self._server_config = server_config
