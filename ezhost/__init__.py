@@ -24,25 +24,6 @@ class PullPolicy(Enum):
     NEVER = 2
 
 
-# See this URL for an explanation of game modes
-# https://developer.valvesoftware.com/wiki/CS:GO_Game_Mode_Commands#Game_Type_and_Game_Mode
-class GameType(Enum):
-    CLASSIC = 0
-    GUN_GAME = 1
-    TRAINING = 2
-    CUSTOM = 3
-    COOPERATIVE = 4
-    SKIRMISH = 5
-    FREE_FOR_ALL = 6
-
-
-class GameMode(Enum):
-    DEFAULT_CASUAL = 0
-    COMPETITIVE = 1
-    WINGMAN = 2
-    WEAPONS_EXPERT = 3
-
-
 class EZHostException(Exception):
     pass
 
