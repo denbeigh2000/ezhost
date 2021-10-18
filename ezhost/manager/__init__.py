@@ -37,6 +37,11 @@ class Manager:
         if self._is_running(d):
             raise AlreadyRunningException(d.name)
 
+        container = self._find_container(d)
+        if container:
+            container.start()
+            return
+
         self._maybe_pull(d)
         self._client.containers.run(**self._build_args(d))
 
@@ -85,7 +90,7 @@ class Manager:
 
     def stop(self, d: Deployment):
         container = self._get_container(d, must_be_running=True)
-        container.stop(timeout=d.shutdown_timeout.total_seconds())
+        container.stop(timeout=int(d.shutdown_timeout.total_seconds()))
 
     def rm(self, d: Deployment, force: bool):
         container = self._get_container(d)
