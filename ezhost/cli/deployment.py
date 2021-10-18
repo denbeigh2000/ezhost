@@ -15,11 +15,16 @@ from typing import Any, Dict
 import click
 
 
+# NOTE: Temporary, until we resolve discovery
 def get_deployables() -> Dict[str, Deployment]:
     deployment = CSGODeployment(
         name="default",
         config=CSGOConfiguration(
-            server_options=ServerOptions("test123", "test123"),
+            server_options=ServerOptions(
+                "test123",
+                "test123",
+                local_cfg="/home/denbeigh/dev/mine/ezhost/configs/esl1on1.cfg",
+            ),
             game_options=GameOptions(),
         ),
     )
